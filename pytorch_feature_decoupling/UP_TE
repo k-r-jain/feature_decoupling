@@ -1,0 +1,28 @@
+#!/bin/bash
+#SBATCH --mem-per-cpu=8GB
+#SBATCH -c 8
+#SBATCH --gres=gpu:1
+##SBATCH --gres-flags=enforce-binding
+#SBATCH -C gpu32
+#SBATCH --time=0-06:00:00
+#SBATCH --job-name="UP_TE"
+#SBATCH -o slurm-UP_TE-%N.%j.out
+#SBATCH --mail-user=kjain@knights.ucf.edu
+#SBATCH --mail-type=END,FAIL
+#SBATCH --requeue
+
+python --version
+
+echo CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES
+nvidia-smi
+
+VRAM=`nvidia-smi --query-gpu=memory.total --format=csv | head -2 | tail -1 | awk '{print $1}'`
+
+echo $VRAM
+
+# CUDA_VISIBLE_DEVICES=0 python train.py --backbone xception --lr 0.01 --workers 4 --epochs 100 --crop-size 256 --batch-size 50 --gpu-ids 0 --checkname deeplab-xception --eval-interval 1 --dataset coco
+
+python main.py --exp=ImageNet_LinearClassifiers_ImageNet_Decoupling_AlexNet_Features --evaluate 0
+
+
+nvidia-smi
